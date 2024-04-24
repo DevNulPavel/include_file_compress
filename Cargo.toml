@@ -22,6 +22,7 @@ proc-macro = true
 [dependencies]
 # Common
 thiserror = "^1.0.59"
+cast = "^0.3.0"
 
 # Memmap
 memmap2 = { version = "^0.9.4", optional = true }

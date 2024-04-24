@@ -5,11 +5,7 @@
 use flate2::{write::DeflateEncoder, Compression};
 use proc_macro::{Span, TokenStream};
 use quote::quote;
-use std::{
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-};
+use std::{fs::File, io::Write, path::PathBuf};
 use syn::{
     parse::{Parse, ParseStream},
     LitByteStr, LitInt, LitStr,
@@ -28,7 +24,7 @@ use syn::{
 ///
 /// ```rust
 /// # use include_file_compress::include_file_compress_deflate;
-/// let compressed_content = include_file_compress_deflate!("data_samples/data.txt");
+/// let compressed_content = include_file_compress_deflate!("data_samples/data.txt", 5);
 /// ```
 #[proc_macro]
 pub fn include_file_compress_deflate(input: TokenStream) -> TokenStream {
@@ -49,7 +45,7 @@ pub fn include_file_compress_deflate(input: TokenStream) -> TokenStream {
     let call_site = Span::call_site().into();
 
     // Compression
-    let compressed_data = match compress_file_deflate(&params.file_path) {
+    let compressed_data = match compress_file_deflate(params) {
         Ok(ok) => ok,
         Err(err) => {
             return syn::Error::new(call_site, format_args!("Compress error: {}", err))
@@ -71,6 +67,8 @@ pub fn include_file_compress_deflate(input: TokenStream) -> TokenStream {
 
 struct CompressParams {
     file_path: PathBuf,
+
+    // TODO: Use validated range type
     compression_level: u8,
 }
 
@@ -121,14 +119,19 @@ impl Parse for CompressParams {
         // Base 10 value parse
         let compression_level = compression_level_lit.base10_parse::<u8>()?;
 
-        // Validate compression level
-        if compression_level < 1 || compression_level > 9 {
-            // Return error with current input location span
-            return Err(compression_level_lit
-                .error("Just file path + compression params are supported now"));
+        // Validate compression level value
+        if !(1_u8..=9_u8).contains(&compression_level) {
+            // Return error with compression level span
+            return Err(syn::Error::new(
+                compression_level_lit.span(),
+                "Compression level must be in range `1..=9`",
+            ));
         }
 
-        Ok(CompressParams { file_path: full_file_path })
+        Ok(CompressParams {
+            file_path: full_file_path,
+            compression_level,
+        })
     }
 }
 
@@ -144,16 +147,14 @@ enum CompressError {
 
 /// Compression code
 #[cfg(not(feature = "mmap"))]
-fn compress_file_deflate(
-    file_path: &Path,
-    compression_level: Option<u8>,
-) -> Result<Vec<u8>, CompressError> {
+fn compress_file_deflate(params: CompressParams) -> Result<Vec<u8>, CompressError> {
     // Read all file contents into RAM
-    let file_data = std::fs::read(file_path)?;
+    let file_data = std::fs::read(params.file_path)?;
 
     // Compress data
     let compressed_data = {
-        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
+        let compression = Compression::new(cast::u32(params.compression_level));
+        let mut encoder = DeflateEncoder::new(Vec::new(), compression);
         encoder.write_all(&file_data)?;
         encoder.flush_finish()?
     };
@@ -162,29 +163,19 @@ fn compress_file_deflate(
 }
 
 /// Compression code
-fn compress_file_deflate(
-    file_path: &Path,
-    compression_level: Option<u8>,
-) -> Result<Vec<u8>, CompressError> {
-    // Use mmap for performance
-    let mut file = File::open(file_path)?;
+fn compress_file_deflate(params: CompressParams) -> Result<Vec<u8>, CompressError> {
+    let file = File::open(params.file_path)?;
 
+    // Use mmap for performance
     let mapped_file_content = unsafe { memmap2::Mmap::map(&file)? };
 
     // Compress data
     let compressed_data = {
-        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
+        let compression = Compression::new(cast::u32(params.compression_level));
+        let mut encoder = DeflateEncoder::new(Vec::new(), compression);
         encoder.write_all(&mapped_file_content)?;
         encoder.flush_finish()?
     };
 
     Ok(compressed_data)
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_deflate() {}
 }
