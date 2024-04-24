@@ -14,6 +14,9 @@ keywords = ["macro"]
 categories = ["compression"]
 repository = "https://github.com/DevNulPavel/include_file_compress"
 publish = ["crates-io"]
+exclude = [
+    ".vscode/",
+]
 
 ############################################################################
 
