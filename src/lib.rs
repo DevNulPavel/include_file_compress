@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 use flate2::{write::DeflateEncoder, Compression};
-use proc_macro::{Spacing, Span, TokenStream};
+use proc_macro::{Span, TokenStream};
 use quote::quote;
 use std::{fs::File, io::Write, path::PathBuf};
 use syn::{
