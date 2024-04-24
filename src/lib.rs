@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 use flate2::{write::DeflateEncoder, Compression};
-use proc_macro::{Span, TokenStream};
+use proc_macro::{Spacing, Span, TokenStream};
 use quote::quote;
 use std::{fs::File, io::Write, path::PathBuf};
 use syn::{
@@ -78,6 +78,9 @@ impl Parse for CompressParams {
 
         // File path as first parameter
         let file_path_lit: LitStr = input.parse()?;
+
+        // Check next comma symbol before compression level
+        input.parse::<syn::Token![,]>()?;
 
         // Compression level parse
         let compression_level_lit: LitInt = input.parse()?;
