@@ -19,7 +19,7 @@ pub(super) fn compress_file_deflate(params: CompressParams) -> Result<Vec<u8>, C
     let file_data = std::fs::read(params.file_path)?;
 
     // Compress data
-    let compressed_data = deflate_compress_data(&mapped_file_content, params.compression_level)?;
+    let compressed_data = deflate_compress_data(&file_data, params.compression_level)?;
 
     Ok(compressed_data)
 }
