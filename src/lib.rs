@@ -22,6 +22,11 @@ use syn::LitByteStr;
 /// Takes path to file near your project `Cargo.toml` file.
 /// It uses `CARGO_MANIFEST_DIR` build time environment variable.
 ///
+/// Parameters:
+/// 
+/// - `"data_samples/data.txt"` path to file relative project root
+/// - `5` compression level in range 1..=9
+/// 
 /// Example below includes content of `data_samples/data.txt` file.
 ///
 /// ```rust
