@@ -1,0 +1,34 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+############################################################################
+
+[package]
+name = "include_file_compress"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+defeult = []
+mmap = ["dep:memmap2"]
+
+############################################################################
+
+# Procedural macros
+[lib]
+proc-macro = true
+
+############################################################################
+
+[dependencies]
+# Common
+thiserror = "^1.0.59"
+
+# Memmap
+memmap2 = { version = "^0.9.4", optional = true }
+
+# Compression
+flate2 = { version = "^1.0.28", default-features = false, features = ["rust_backend"] }
+
+# Macros
+syn = { version = "^2.0.60", default-features = false }
+quote = { version = "^1.0.36", default-features = false }
