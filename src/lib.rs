@@ -5,7 +5,7 @@
 use flate2::{write::DeflateEncoder, Compression};
 use proc_macro::{Span, TokenStream};
 use quote::quote;
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf};
 use syn::{
     parse::{Parse, ParseStream},
     LitByteStr, LitInt, LitStr,
@@ -159,15 +159,18 @@ fn compress_file_deflate(params: CompressParams) -> Result<Vec<u8>, CompressErro
         let compression = Compression::new(cast::u32(params.compression_level));
         let mut encoder = DeflateEncoder::new(Vec::new(), compression);
         encoder.write_all(&file_data)?;
-        encoder.flush_finish()?
+        // Используем именно .finish() вместо encoder.flush_finish(),
+        // иначе стрим не закроется
+        encoder.finish()?
     };
 
     Ok(compressed_data)
 }
 
 /// Compression code
+#[cfg(feature = "mmap")]
 fn compress_file_deflate(params: CompressParams) -> Result<Vec<u8>, CompressError> {
-    let file = File::open(params.file_path)?;
+    let file = std::fs::File::open(params.file_path)?;
 
     // Use mmap for performance
     let mapped_file_content = unsafe { memmap2::Mmap::map(&file)? };
@@ -177,7 +180,9 @@ fn compress_file_deflate(params: CompressParams) -> Result<Vec<u8>, CompressErro
         let compression = Compression::new(cast::u32(params.compression_level));
         let mut encoder = DeflateEncoder::new(Vec::new(), compression);
         encoder.write_all(&mapped_file_content)?;
-        encoder.flush_finish()?
+        // Используем именно .finish() вместо encoder.flush_finish(),
+        // иначе стрим не закроется
+        encoder.finish()?
     };
 
     Ok(compressed_data)
