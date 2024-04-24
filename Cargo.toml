@@ -16,6 +16,7 @@ repository = "https://github.com/DevNulPavel/include_file_compress"
 publish = ["crates-io"]
 exclude = [
     ".vscode/",
+    "data_samples/",
 ]
 
 ############################################################################
