@@ -6,9 +6,19 @@
 name = "include_file_compress"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Includes content of file in your binary with compression at compile time."
+readme = "README.md"
+authors = ["Pavel Ershov <devnulpavel@gmail.com>"]
+keywords = ["macro"]
+categories = ["compression"]
+repository = "https://github.com/DevNulPavel/include_file_compress"
+publish = ["crates-io"]
+
+############################################################################
 
 [features]
-defeult = []
+default = []
 mmap = ["dep:memmap2"]
 
 ############################################################################

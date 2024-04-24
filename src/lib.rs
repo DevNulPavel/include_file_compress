@@ -19,12 +19,12 @@ use syn::{
 ///
 /// Takes path to file near your project `Cargo.toml` file.
 /// It uses `CARGO_MANIFEST_DIR` build time environment variable.
-///
+/// 
 /// Example below includes content of `data_samples/data.txt` file.
 ///
 /// ```rust
 /// # use include_file_compress::include_file_compress_deflate;
-/// let compressed_content = include_file_compress_deflate!("data_samples/data.txt", 5);
+/// include_file_compress_deflate!("data_samples/data.txt", 5);
 /// ```
 #[proc_macro]
 pub fn include_file_compress_deflate(input: TokenStream) -> TokenStream {
