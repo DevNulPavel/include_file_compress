@@ -23,10 +23,10 @@ use syn::LitByteStr;
 /// It uses `CARGO_MANIFEST_DIR` build time environment variable.
 ///
 /// Parameters:
-/// 
+///
 /// - `"data_samples/data.txt"` path to file relative project root
 /// - `5` compression level in range 1..=9
-/// 
+///
 /// Example below includes content of `data_samples/data.txt` file.
 ///
 /// ```rust
@@ -61,11 +61,14 @@ pub fn include_file_compress_deflate(input: TokenStream) -> TokenStream {
         }
     };
 
+    // Embed len
+    let embed_bytes_len = compressed_data.len();
+
     // Embed bytes
     let embed_bytes = LitByteStr::new(&compressed_data, call_site);
 
     // Embeddable result
-    let result = quote!(#embed_bytes);
+    let result = quote!({ #embed_bytes as (&'static [u8; #embed_bytes_len]) });
 
     result.into()
 }
